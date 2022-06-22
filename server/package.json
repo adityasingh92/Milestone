@@ -1,0 +1,15 @@
+{
+  "name": "milestone-server",
+  "version": "1.0.1",
+  "description": "Milestone server side",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Server",
+    "App"
+  ],
+  "author": "Aditya Singh",
+  "license": "ISC"
+}
