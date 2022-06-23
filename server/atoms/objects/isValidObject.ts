@@ -15,7 +15,7 @@ function isValidObject(object: Object, propertyArray: string[]){
         };
     }
 
-    console.log(`Property Array ${propertyArray}`);
+    
     for(const property of propertyArray){
         if(!object.hasOwnProperty(property)){
             return {

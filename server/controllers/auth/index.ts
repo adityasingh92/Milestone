@@ -17,7 +17,10 @@ import {
     invalidEmailOrPasswordErrorText,
     unauthorizedAccess,
     authorizedAccess,
-    tokenErrorText
+    tokenErrorText,
+    incorrectPasswordErrorText,
+    passwordUpdatedSuccessText,
+    passwordUpdatedFailedErrorText
 } from '../../Locale/controllers/auth';
 
 dotenv.config();
@@ -162,7 +165,7 @@ export async function changePassword(req:Request, res:Response){
     let decodedJWT: jwt.JwtPayload | string;
 
     try{
-        decodedJWT = jwt.verify(token, tokenSecret);
+        decodedJWT = jwt.verify(token, tokenSecret) as jwt.JwtPayload;
     }catch(error){
         return res.status(412).json({
             message: tokenErrorText
@@ -179,5 +182,37 @@ export async function changePassword(req:Request, res:Response){
 
     if( !updatePasswordObject.status ){
         return res.status(400).json(updatePasswordObject);
+    }
+
+    const fetchedUser = await User.findById(decodedJWT.username);
+
+    if( !fetchedUser ){
+        return res.status(404);
+    }
+
+    const currentPasswordValidity = await bcrypt.compare(req.body.oldPassword, fetchedUser.password);
+
+    if( !currentPasswordValidity ){
+        return res.status(401).json({
+            message: incorrectPasswordErrorText
+        });
+    }
+
+    try{
+        const hashedPassword = await encryptString(req.body.newPassword);
+
+        const updatedField = await User.findByIdAndUpdate(decodedJWT.id, {password: hashedPassword});
+
+        if( !updatedField ){
+            return res.status(401).json({
+                message: passwordUpdatedFailedErrorText
+            });
+        }
+
+        return res.status(201).json({
+            message: passwordUpdatedSuccessText
+        });
+    }catch(error){
+        return res.status(500);
     }
 };
